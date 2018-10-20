@@ -2,6 +2,10 @@
 
 Dolos is the spirit of trickery and guile. He is also a master at cunning deception, craftiness, and treachery. Very similar in many ways to most cloud marketing departments.
 
+Performance and error rate are important when you work all day with automation on a public cloud. Kubernetes cluster creation and deletion times are important if you value clean room testing as part of your pipelines.
+
+This repo contains a set of scripts that will let you independently test each cloud provider.
+
 # Usage
 
 ## Azure
