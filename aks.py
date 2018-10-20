@@ -30,10 +30,13 @@ def cleanup():
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time
     log("Total destroy time taken: %s" % str(destroy_total_time))
-    subprocess.check_output(['kubectl', 'config', 'unset', 'current-context'])
-    subprocess.check_output(['kubectl', 'config', 'unset', 'users.clusterUser_dolos_dolos'])
-    subprocess.check_output(['kubectl', 'config', 'delete-cluster', 'dolos'])
-    subprocess.check_output(['kubectl', 'config', 'delete-context', 'dolos'])
+    try:
+        subprocess.check_output(['kubectl', 'config', 'unset', 'current-context'])
+        subprocess.check_output(['kubectl', 'config', 'unset', 'users.clusterUser_dolos_dolos'])
+        subprocess.check_output(['kubectl', 'config', 'delete-cluster', 'dolos'])
+        subprocess.check_output(['kubectl', 'config', 'delete-context', 'dolos'])
+    except:
+        pass
 
 #
 # Destroy Everything
@@ -69,9 +72,12 @@ print(deployment)
 
 log("Getting external IP")
 while True:
-    service = subprocess.check_output(['kubectl', 'get', 'service', 'azure-vote-front', '--output', 'json'])
-    external_ip = json.loads(service)['status']['loadBalancer']['ingress'][0]['ip']
-    if external_ip is not None:
+    try:
+        service = subprocess.check_output(['kubectl', 'get', 'service', 'azure-vote-front', '--output', 'json'])
+        external_ip = json.loads(service)['status']['loadBalancer']['ingress'][0]['ip']
+    except:
+        pass
+    if not any(char.isdigit() for char in external_ip):
         break
 
 log("Getting web contents from %s" % external_ip)
