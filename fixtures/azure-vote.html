@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/default.css">
+    <title>Azure Voting App</title>
+
+    <script language="JavaScript">
+        function send(form){
+        }
+    </script>
+
+</head>
+<body>
+    <div id="container">
+        <form id="form" name="form" action="/"" method="post"><center>
+        <div id="logo">Azure Voting App</div>
+        <div id="space"></div>
+        <div id="form">
+        <button name="vote" value="Cats" onclick="send()" class="button button1">Cats</button>
+        <button name="vote" value="Dogs" onclick="send()" class="button button2">Dogs</button>
+        <button name="vote" value="reset" onclick="send()" class="button button3">Reset</button>
+        <div id="space"></div>
+        <div id="space"></div>
+        <div id="results"> Cats - 0 | Dogs - 0 </div> 
+        </form>        
+        </div>
+    </div>     
+</body>
+</html>
