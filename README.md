@@ -24,16 +24,16 @@ az login
 az aks install-cli
 ```
 ```
-while true; do ./aks.py >> log.txt; sleep 2; done
+nohup ./aks.py &
 ```
 
 Leave this running for an hour or two and then grep the log.
 
 ```
-grep -i "total create time taken" log.txt
+grep -i "total create time taken" dolos.txt
 ```
 ```
-grep -i "total destroy time taken" log.txt
+grep -i "total destroy time taken" dolos.txt
 ```
 
 
