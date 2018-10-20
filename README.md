@@ -10,15 +10,27 @@ Sign up to Azure and get your $200 of free credits.
 
 This process follows the [kubernetes walkthrough](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) documentation.
 
-```pip install --user requirements.txt```
-```az login```
-```az aks install-cli```
-```while true; do ./aks.py >> log.txt; sleep 2; done```
+```
+pip install --user requirements.txt
+```
+```
+az login
+```
+```
+az aks install-cli
+```
+```
+while true; do ./aks.py >> log.txt; sleep 2; done
+```
 
 Leave this running for an hour or two and then grep the log.
 
-```grep -i "total create time taken" log.txt```
-```grep -i "total destroy time taken" log.txt```
+```
+grep -i "total create time taken" log.txt
+```
+```
+grep -i "total destroy time taken" log.txt
+```
 
 
 ## Google
