@@ -75,10 +75,11 @@ while True:
     try:
         service = subprocess.check_output(['kubectl', 'get', 'service', 'azure-vote-front', '--output', 'json'])
         external_ip = json.loads(service)['status']['loadBalancer']['ingress'][0]['ip']
+        if external_ip:
+            if any(char.isdigit() for char in external_ip):
+                break
     except:
         pass
-    if not any(char.isdigit() for char in external_ip):
-        break
 
 log("Getting web contents from %s" % external_ip)
 content = requests.get("http://" + external_ip).text
