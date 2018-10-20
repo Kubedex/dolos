@@ -7,14 +7,29 @@ import sys
 import os
 import json
 import requests
+import logging
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+
+def setup_custom_logger(name):
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    handler = logging.FileHandler('dolos.txt', mode='w')
+    handler.setFormatter(formatter)
+    screen_handler = logging.StreamHandler(stream=sys.stdout)
+    screen_handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+    logger.addHandler(screen_handler)
+    return logger
+
+logger = setup_custom_logger('dolos')
 
 def az(command):
     return get_default_cli().invoke(command)
 
 def log(message):
-    print("%s %s" % (datetime.datetime.now(), message))
+    logger.info(message)
 
 def status(code):
     if code != 0:
