@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 from azure.cli.core import get_default_cli
 import datetime
 import subprocess
@@ -55,55 +54,61 @@ def cleanup():
 
 if __name__ == '__main__':
 
-    cleanup()
+    try:
+        while True:
 
-    create_start_time = datetime.datetime.now()
-    log("Starting test")
+            cleanup()
 
-    log("Creating Resource Group")
-    group_create = az(['group', 'create', '--name', 'dolos', '--location', 'eastus'])
-    status(group_create)
+            create_start_time = datetime.datetime.now()
+            log("Starting test")
 
-    log("Creating the AKS cluster")
-    aks_create = az(['aks', 'create', '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
-    status(aks_create)
+            log("Creating Resource Group")
+            group_create = az(['group', 'create', '--name', 'dolos', '--location', 'eastus'])
+            status(group_create)
 
-    log("Getting cluster credentials")
-    get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
+            log("Creating the AKS cluster")
+            aks_create = az(['aks', 'create', '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
+            status(aks_create)
 
-    log("Get Nodes")
-    nodes = subprocess.check_output(['kubectl', 'get', 'nodes'])
-    print(nodes)
+            log("Getting cluster credentials")
+            get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
 
-    log("Applying Deployment")
-    deploy_file = os.path.join(DIR_NAME, 'fixtures', 'azure-vote.yaml')
-    deployment = subprocess.check_output(['kubectl', 'apply', '-f', deploy_file])
-    print(deployment)
+            log("Get Nodes")
+            nodes = subprocess.check_output(['kubectl', 'get', 'nodes'])
+            log(nodes)
 
-    log("Getting external IP")
-    while True:
-        try:
-            service = subprocess.check_output(['kubectl', 'get', 'service', 'azure-vote-front', '--output', 'json'])
-            external_ip = json.loads(service)['status']['loadBalancer']['ingress'][0]['ip']
-            if external_ip:
-                if any(char.isdigit() for char in external_ip):
-                    break
-        except:
-            pass
+            log("Applying Deployment")
+            deploy_file = os.path.join(DIR_NAME, 'fixtures', 'azure-vote.yaml')
+            deployment = subprocess.check_output(['kubectl', 'apply', '-f', deploy_file])
+            log(deployment)
 
-    log("Getting web contents from %s" % external_ip)
-    content = requests.get("http://" + external_ip).text
+            log("Getting external IP")
+            while True:
+                try:
+                    service = subprocess.check_output(['kubectl', 'get', 'service', 'azure-vote-front', '--output', 'json'])
+                    external_ip = json.loads(service)['status']['loadBalancer']['ingress'][0]['ip']
+                    if external_ip:
+                        if any(char.isdigit() for char in external_ip):
+                            break
+                except:
+                    pass
 
-    with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
-        test_data = testfile.read()
+            log("Getting web contents from %s" % external_ip)
+            content = requests.get("http://" + external_ip).text
 
-    if test_data == content:
-        log("Test passed. Cluster complete.")
-        create_end_time = datetime.datetime.now()
-        create_total_time = create_end_time - create_start_time
-        log("Total create time taken: %s" % str(create_total_time))
-    else:
-        log("Test failed. Exiting.")
-        sys.exit(1)
+            with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
+                test_data = testfile.read()
 
-    cleanup()
+            if test_data == content:
+                log("Test passed. Cluster complete.")
+                create_end_time = datetime.datetime.now()
+                create_total_time = create_end_time - create_start_time
+                log("Total create time taken: %s" % str(create_total_time))
+            else:
+                log("Test failed. Exiting.")
+                sys.exit(1)
+
+            cleanup()
+
+    except KeyboardInterrupt:
+        log('interrupted!')
