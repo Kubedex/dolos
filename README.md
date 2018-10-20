@@ -15,7 +15,7 @@ Sign up to Azure and get your $200 of free credits.
 This process follows the [kubernetes walkthrough](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) documentation.
 
 ```
-pip install --user requirements.txt
+pip install -r requirements.txt
 ```
 ```
 az login
