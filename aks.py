@@ -6,6 +6,8 @@ import sys
 import os
 import json
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import logging
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
@@ -94,7 +96,11 @@ if __name__ == '__main__':
                     pass
 
             log("Getting web contents from %s" % external_ip)
-            content = requests.get("http://" + external_ip).text
+            session = requests.Session()
+            retry = Retry(connect=10, backoff_factor=0.5)
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount('http://', adapter)
+            content = session.get("http://" + external_ip).text
 
             with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
                 test_data = testfile.read()
