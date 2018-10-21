@@ -39,7 +39,7 @@ grep -i "total destroy time taken" dolos.txt
 
 ## Google
 
-Sign up to GCP and get your $300 of free credits.
+Sign up to GCP and get your $300 of free credits. Then [enable billing](https://cloud.google.com/billing/docs/how-to/modify-project?visit_id=636756998918052718-1229259697&rd=1#enable-billing).
 
 Install the [Gcloud sdk](https://cloud.google.com/sdk/docs/quickstarts)
 
@@ -60,7 +60,6 @@ gcloud services enable container.googleapis.com
 ```
 nohup ./gke.py &
 ```
-It can take a few minutes for Google to enable billing on a brand new account. The script won't run until this has been setup.
 
 
 ## Amazon
