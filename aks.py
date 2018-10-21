@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from azure.cli.core import get_default_cli
+import time
 import datetime
 import subprocess
 import sys
