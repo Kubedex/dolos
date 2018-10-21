@@ -136,9 +136,7 @@ if __name__ == '__main__':
                 create_total_time = create_end_time - create_start_time
                 log("Total create time taken: %s" % str(create_total_time))
             else:
-                log("Test failed. Exiting.")
-
-            cleanup()
+                log("Test failed.")
 
     except KeyboardInterrupt:
         log('interrupted!')
