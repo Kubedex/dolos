@@ -45,7 +45,10 @@ def log(message):
 def cleanup():
     log("Attempting to delete cluster")
     destroy_start_time = datetime.datetime.now()
-    subprocess.check_output(['gcloud', '-q', 'container', 'clusters', 'delete', 'dolos'])
+    try:
+        subprocess.check_output(['gcloud', '-q', 'container', 'clusters', 'delete', 'dolos'])
+    except:
+        pass
     destroy_end_time = datetime.datetime.now()
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time

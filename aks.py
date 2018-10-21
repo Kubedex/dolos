@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from azure.cli.core import get_default_cli
-import time
 import datetime
 import subprocess
 import sys
@@ -115,18 +114,15 @@ if __name__ == '__main__':
 
             log("Getting web contents from %s" % external_ip)
 
-            t0 = time.time()
-            try:
-                url = 'http://' + str(external_ip)
-                response = requests_retry_session().get(url)
-                content = response.text
-            except Exception as x:
-                log("web content failed: %s" % x.__class__.__name__)
-            else:
-                log("web content eventually worked: %s" % response.status_code)
-            finally:
-                t1 = time.time()
-                log("web content took %s seconds" % str(t1 - t0))
+            content = ""
+            while content == "":
+                try:
+                    url = 'http://' + str(external_ip)
+                    response = requests_retry_session().get(url)
+                    content = response.text
+                except Exception as x:
+                    log("web content failed: %s" % x.__class__.__name__)
+
 
             with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
                 test_data = testfile.read()
