@@ -48,7 +48,7 @@ def log(message):
 def status(code):
     if code != 0:
         log("Error")
-        sys.exit(1)
+        return False
     return True
 
 def cleanup():
@@ -79,14 +79,18 @@ if __name__ == '__main__':
 
             log("Creating Resource Group")
             group_create = az(['group', 'create', '--name', 'dolos', '--location', 'eastus'])
-            status(group_create)
+            if not status(group_create):
+                break
 
             log("Creating the AKS cluster")
             aks_create = az(['aks', 'create', '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
-            status(aks_create)
+            if not status(aks_create):
+                break
 
             log("Getting cluster credentials")
             get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
+            if not status(get_creds)
+                break
 
             log("Get Nodes")
             nodes = subprocess.check_output(['kubectl', 'get', 'nodes'])
@@ -133,7 +137,6 @@ if __name__ == '__main__':
                 log("Total create time taken: %s" % str(create_total_time))
             else:
                 log("Test failed. Exiting.")
-                sys.exit(1)
 
             cleanup()
 
