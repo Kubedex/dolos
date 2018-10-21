@@ -77,6 +77,8 @@ if __name__ == '__main__':
     try:
         while True:
 
+            subprocess.check_output(['gcloud', 'auth', 'activate-service-account', '--key-file=' + key_file])
+
             cleanup()
 
             create_start_time = datetime.datetime.now()
