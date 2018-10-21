@@ -62,6 +62,7 @@ nohup ./gke.py &
 ```
 
 
+
 ## Amazon
 
 This is currently dreadful. I have automation in Travis for this at work and it consistently takes 20 minutes. This includes creating a VPC, NAT gateway (a few mins), then starting EKS (about 11 mins), then the workers need to join.
