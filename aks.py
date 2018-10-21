@@ -126,7 +126,7 @@ if __name__ == '__main__':
                 log("web content eventually worked: %s" % response.status_code)
             finally:
                 t1 = time.time()
-                log("web content took %s seconds" % t1 - t0)
+                log("web content took %s seconds" % str(t1 - t0))
 
             with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
                 test_data = testfile.read()
