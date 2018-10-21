@@ -8,34 +8,47 @@ This repo contains a set of scripts that will let you independently test each cl
 
 # Usage
 
+You'll need Python 3 and Docker. Read each section below in order to create some credentials to put into the config.yml.
+
+Once you have good `config.yml` and `service-account.json` files simply run `docker-compose up -d`. This will start a container per cloud and update a logfile in `log/`. Leave it running for a few hours and you should get a number of creation and deletion timings.
+
+Each cloud is tested in the same way. Starting from a brand new account with nothing in we provision a Kubernetes cluster, deploy an application, and then test it's up. We then delete everything and try again, in a loop, forever until you cancel it.
+
+*Warning: cloud resources cost money so don't accidentally leave this on forever*
+
+
 ## Azure
 
 Sign up to Azure and get your $200 of free credits.
 
 This process follows the [kubernetes walkthrough](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) documentation.
 
+Install the Azure CLI tool on your laptop.
 ```
-pip install -r requirements.txt
+pip install --user azure-cli
 ```
+
+Login and authenticate via a web browser.
 ```
 az login
 ```
+
+Create a service principle with a password of your choice. Make a note of the `appId` and `tenant` fields for the next commands.
 ```
-az aks install-cli
-```
-```
-nohup ./aks.py &
+az ad sp create-for-rbac --name dolos --password <PASSWORD>
 ```
 
-Leave this running for an hour or two and then grep the log.
-
+Take the `appId` value from the previous command and use it in the role assignment.
 ```
-grep -i "total create time taken" dolos.txt
-```
-```
-grep -i "total destroy time taken" dolos.txt
+az role assignment create --assignee <APP_ID> --role Owner
 ```
 
+Take the `appId`, `password` and `tenant` from the previous commands and try to login.
+```
+az login --service-principal --username <APP_ID> --password <PASSWORD> --tenant <TENANT_ID>
+```
+
+Now put the `appId`, `password` and `tenant` into the `config.yml.example` and rename the file to `config.yml`.
 
 ## Google
 
@@ -45,23 +58,47 @@ Install the [Gcloud sdk](https://cloud.google.com/sdk/docs/quickstarts)
 
 This process follows the [GKE Quickstart](https://cloud.google.com/kubernetes-engine/docs/quickstart)
 
-```
-pip install -r requirements.txt
-```
+Login for the first time on your local machine.
 ```
 gcloud init
 ```
+
+Set some variables for the service account we're about to create.
 ```
-gcloud config set compute/zone us-east1-b
+export PROJECT_ID=$(gcloud config get-value core/project)
+export SERVICE_ACCOUNT_NAME="dolos-sa"
 ```
+
+Create the service account.
+```
+gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --display-name "Dolos Service Account"
+```
+
+Assign the service account to the project and give it a role.
+```
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role='roles/owner'
+```
+
+Download the service-account.json. This need to stay in the root dir of this repo.
+```
+gcloud iam service-accounts keys create \
+  --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  service-account.json
+```
+
+Go to the link that pops up when this errors and click enable. Not sure how to do this without an error.
+```
+gcloud services enable serviceusage.googleapis.com
+```
+
+Enable the container services.
 ```
 gcloud services enable container.googleapis.com
 ```
-```
-nohup ./gke.py &
-```
 
-
+Finally, take the value for `project_id` in the `service-account.json` and put it in `config.yml` under the gke section.
 
 ## Amazon
 

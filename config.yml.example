@@ -1,0 +1,8 @@
+---
+
+aks:
+  user:
+  password:
+  tenant:
+gke:
+  project:

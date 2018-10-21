@@ -1,15 +1,27 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import datetime
 import subprocess
 import sys
 import os
 import json
+import yaml
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import logging
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
+DIR_PARENT = os.path.abspath(os.path.join(DIR_NAME, os.pardir))
+
+with open(os.path.join(DIR_PARENT, 'config.yml'), 'r') as config_file:
+    config = yaml.load(config_file.read())
+
+key_file = os.path.join(DIR_PARENT, 'service-account.json')
+subprocess.check_output(['gcloud', 'auth', 'activate-service-account', '--key-file=' + key_file])
+
+subprocess.check_output(['gcloud', 'config', 'set', 'project', config['gke']['project']])
+subprocess.check_output(['gcloud', 'config', 'set', 'compute/zone', 'us-east1-b'])
+
 
 def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None):
     session = session or requests.Session()
@@ -26,7 +38,7 @@ def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500,
 
 def setup_custom_logger(name):
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    handler = logging.FileHandler('dolos.txt', mode='w')
+    handler = logging.FileHandler(os.path.join(DIR_PARENT, 'log', 'gke.txt'), mode='w')
     handler.setFormatter(formatter)
     screen_handler = logging.StreamHandler(stream=sys.stdout)
     screen_handler.setFormatter(formatter)
