@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
             log("Getting cluster credentials")
             get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
-            if not status(get_creds)
+            if not status(get_creds):
                 break
 
             log("Get Nodes")
