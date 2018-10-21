@@ -12,6 +12,19 @@ import logging
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 
+def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
 def setup_custom_logger(name):
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler('dolos.txt', mode='w')
@@ -96,11 +109,19 @@ if __name__ == '__main__':
                     pass
 
             log("Getting web contents from %s" % external_ip)
-            session = requests.Session()
-            retry = Retry(connect=10, backoff_factor=0.5)
-            adapter = HTTPAdapter(max_retries=retry)
-            session.mount('http://', adapter)
-            content = session.get("http://" + external_ip).text
+
+            t0 = time.time()
+            try:
+                url = 'http://' + str(external_ip)
+                response = requests_retry_session().get(url)
+                content = response.text
+            except Exception as x:
+                log("web content failed: %s" % x.__class__.__name__)
+            else:
+                log("web content eventually worked: %s" % response.status_code)
+            finally:
+                t1 = time.time()
+                log("web content took %s seconds" % t1 - t0)
 
             with open(os.path.join(DIR_NAME, 'fixtures', 'azure-vote.html'), 'r') as testfile:
                 test_data = testfile.read()
