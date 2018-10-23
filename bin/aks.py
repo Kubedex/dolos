@@ -91,11 +91,6 @@ if __name__ == '__main__':
             create_start_time = datetime.datetime.now()
             log("Starting test")
 
-            log("Creating Resource Group")
-            group_create = az(['group', 'create', '--name', 'dolos', '--location', 'eastus'])
-            if not status(group_create):
-                break
-
             log("Creating the AKS cluster")
             aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
             if not status(aks_create):
