@@ -92,7 +92,7 @@ if __name__ == '__main__':
             log("Starting test")
 
             log("Creating the AKS cluster")
-            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
+            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--location', 'eastus', '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--kubernetes-version', '1.11.3', '--generate-ssh-keys'])
             if not status(aks_create):
                 break
 
