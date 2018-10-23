@@ -66,7 +66,7 @@ def status(code):
 def cleanup():
     log("Attempting to delete cluster")
     destroy_start_time = datetime.datetime.now()
-    az(['group', 'delete', '--name', 'dolos', '--yes'])
+    az(['aks', 'cluster' 'delete', '--name', 'dolos', '--group', 'dolos', '--yes'])
     destroy_end_time = datetime.datetime.now()
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time
