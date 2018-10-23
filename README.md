@@ -48,6 +48,11 @@ Take the `appId`, `password` and `tenant` from the previous commands and try to 
 az login --service-principal --username <APP_ID> --password <PASSWORD> --tenant <TENANT_ID>
 ```
 
+Create a Resource Group
+```
+az group create --name dolos --location eastus
+```
+
 Now put the `appId`, `password` and `tenant` into the `config.yml.example` and rename the file to `config.yml`.
 
 ## Google
