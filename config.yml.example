@@ -4,5 +4,6 @@ aks:
   user:
   password:
   tenant:
+  location:
 gke:
   project:

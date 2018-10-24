@@ -66,7 +66,7 @@ def status(code):
 def cleanup():
     log("Attempting to delete cluster")
     destroy_start_time = datetime.datetime.now()
-    az(['aks', 'cluster' 'delete', '--name', 'dolos', '--group', 'dolos', '--yes'])
+    az(['aks', 'delete', '--name', 'dolos', '--resource-group', 'dolos', '--yes'])
     destroy_end_time = datetime.datetime.now()
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time
@@ -89,12 +89,17 @@ if __name__ == '__main__':
             cleanup()
 
             create_start_time = datetime.datetime.now()
+            aks_create_start_time = create_start_time
             log("Starting test")
 
             log("Creating the AKS cluster")
-            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--location', 'eastus', '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--kubernetes-version', '1.11.3', '--generate-ssh-keys'])
+            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--location', config['aks']['location'], '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--kubernetes-version', '1.11.3', '--generate-ssh-keys'])
             if not status(aks_create):
                 break
+
+            aks_create_end_time = datetime.datetime.now()
+            aks_create_total_time = aks_create_end_time - aks_create_start_time
+            log("az aks create time taken: %s" % str(aks_create_total_time))
 
             log("Getting cluster credentials")
             get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
@@ -105,6 +110,7 @@ if __name__ == '__main__':
             nodes = subprocess.check_output(['kubectl', 'get', 'nodes'])
             log(nodes)
 
+            deployment_service_create_start_time = datetime.datetime.now()
             log("Applying Deployment")
             deploy_file = os.path.join(DIR_NAME, 'fixtures', 'azure-vote.yaml')
             deployment = subprocess.check_output(['kubectl', 'apply', '-f', deploy_file])
@@ -120,6 +126,10 @@ if __name__ == '__main__':
                             break
                 except:
                     pass
+
+            deployment_service_create_end_time = datetime.datetime.now()
+            deployment_service_create_total_time = deployment_service_create_end_time - deployment_service_create_start_time
+            log("ip available: %s" % str(deployment_service_create_total_time))
 
             log("Getting web contents from %s" % external_ip)
 
