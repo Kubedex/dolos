@@ -10,15 +10,15 @@ services:
         - ./config.yml:/opt/dolos/config.yml
         - ./log:/opt/dolos/log
         - ./bin:/opt/dolos/bin
-#   gke:
-#     build: .
-#     image: "dolos"
-#     container_name: "dolos-gke"
-#     entrypoint: "/opt/dolos/bin/gke.py"
-#     environment:
-#       - GOOGLE_APPLICATION_CREDENTIALS=/opt/dolos/service-account.json
-#     volumes:
-#        - ./config.yml:/opt/dolos/config.yml
-#        - ./service-account.json:/opt/dolos/service-account.json
-#        - ./log:/opt/dolos/log
-#        - ./bin:/opt/dolos/bin
+   gke:
+     build: .
+     image: "dolos"
+     container_name: "dolos-gke"
+     entrypoint: "/opt/dolos/bin/gke.py"
+     environment:
+       - GOOGLE_APPLICATION_CREDENTIALS=/opt/dolos/service-account.json
+     volumes:
+        - ./config.yml:/opt/dolos/config.yml
+        - ./service-account.json:/opt/dolos/service-account.json
+        - ./log:/opt/dolos/log
+        - ./bin:/opt/dolos/bin
