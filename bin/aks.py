@@ -23,7 +23,6 @@ LOGIN = [
     '--password', config['aks']['password'],
     '--tenant', config['aks']['tenant']
 ]
-get_default_cli().invoke(LOGIN)
 
 def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None):
     session = session or requests.Session()
@@ -40,7 +39,7 @@ def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500,
 
 def setup_custom_logger(name):
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    handler = logging.FileHandler(os.path.join(DIR_PARENT, 'log', 'aks.txt'), mode='w')
+    handler = logging.FileHandler(os.path.join(DIR_PARENT, 'log', 'aks.txt'), mode='a')
     handler.setFormatter(formatter)
     screen_handler = logging.StreamHandler(stream=sys.stdout)
     screen_handler.setFormatter(formatter)
@@ -84,6 +83,8 @@ if __name__ == '__main__':
 
     try:
         while True:
+
+            get_default_cli().invoke(LOGIN)
 
             cleanup()
 

@@ -38,7 +38,7 @@ def requests_retry_session(retries=3, backoff_factor=0.3, status_forcelist=(500,
 
 def setup_custom_logger(name):
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    handler = logging.FileHandler(os.path.join(DIR_PARENT, 'log', 'gke.txt'), mode='w')
+    handler = logging.FileHandler(os.path.join(DIR_PARENT, 'log', 'gke.txt'), mode='a')
     handler.setFormatter(formatter)
     screen_handler = logging.StreamHandler(stream=sys.stdout)
     screen_handler.setFormatter(formatter)
@@ -76,6 +76,8 @@ if __name__ == '__main__':
 
     try:
         while True:
+
+            subprocess.check_output(['gcloud', 'auth', 'activate-service-account', '--key-file=' + key_file])
 
             cleanup()
 
