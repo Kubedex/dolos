@@ -11,9 +11,11 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import logging
 import csv
+import uuid
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 DIR_PARENT = os.path.abspath(os.path.join(DIR_NAME, os.pardir))
+RUNID = ""
 
 with open(os.path.join(DIR_PARENT, 'config.yml'), 'r') as config_file:
     config = yaml.load(config_file.read())
@@ -50,13 +52,7 @@ def setup_custom_logger(name):
     logger.addHandler(screen_handler)
     return logger
 
-def setup_csv_logger(name):
-    csv_file = open(os.path.join(DIR_PARENT, 'log', 'aks.csv'), mode='a')
-    csv_logger = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    return csv_logger
-
 logger = setup_custom_logger('dolos')
-csvlogger = setup_csv_logger('csv')
 
 def az(command):
     return get_default_cli().invoke(command)
@@ -65,7 +61,9 @@ def log(message):
     logger.info(message)
 
 def csvlog(category,timetaken):
-    csvlogger.writerow([category, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), timetaken])
+    with open(os.path.join(DIR_PARENT, 'log', 'aks.csv'), 'a') as csvFile:
+      writer = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+      writer.writerow([RUNID, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), category, timetaken])
 
 def status(code):
     if code != 0:
@@ -74,6 +72,10 @@ def status(code):
     return True
 
 def cleanup():
+    global RUNID
+    RUNID = uuid.uuid4().hex
+    log("Current run id: %s" % RUNID)
+
     log("Attempting to delete cluster")
     destroy_start_time = datetime.datetime.now()
     az(['aks', 'delete', '--name', 'dolos', '--resource-group', 'dolos', '--yes'])
@@ -144,6 +146,8 @@ if __name__ == '__main__':
             log("ip available: %s" % str(deployment_service_create_total_time))
             csvlog("SERVICE_PUBLIC_IP",str(deployment_service_create_total_time))
 
+            get_content_start_time = datetime.datetime.now()
+
             log("Getting web contents from %s" % external_ip)
 
             content = ""
@@ -163,8 +167,9 @@ if __name__ == '__main__':
                 log("Test passed. Cluster complete.")
                 create_end_time = datetime.datetime.now()
                 create_total_time = create_end_time - create_start_time
+                get_content_end_time = create_end_time
                 log("Total create time taken: %s" % str(create_total_time))
-                csvlog("WEBLOAD",str(create_total_time))
+                csvlog("WEBLOAD",str(get_content_end_time))
             else:
                 log("Test failed.")
 
