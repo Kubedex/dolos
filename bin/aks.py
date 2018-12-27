@@ -10,6 +10,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import logging
+import csv
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 DIR_PARENT = os.path.abspath(os.path.join(DIR_NAME, os.pardir))
@@ -49,13 +50,22 @@ def setup_custom_logger(name):
     logger.addHandler(screen_handler)
     return logger
 
+def setup_csv_logger(name):
+    csv_file = open(os.path.join(DIR_PARENT, 'log', 'aks.csv'), mode='a')
+    csv_logger = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    return csv_logger
+
 logger = setup_custom_logger('dolos')
+csvlogger = setup_csv_logger('csv')
 
 def az(command):
     return get_default_cli().invoke(command)
 
 def log(message):
     logger.info(message)
+
+def csvlog(category,timetaken):
+    csvlogger.writerow([category, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), timetaken])
 
 def status(code):
     if code != 0:
@@ -71,6 +81,7 @@ def cleanup():
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time
     log("Total destroy time taken: %s" % str(destroy_total_time))
+    csvlog("DELETE",str(destroy_total_time))
     try:
         subprocess.check_output(['kubectl', 'config', 'unset', 'current-context'])
         subprocess.check_output(['kubectl', 'config', 'unset', 'users.clusterUser_dolos_dolos'])
@@ -100,6 +111,7 @@ if __name__ == '__main__':
             aks_create_end_time = datetime.datetime.now()
             aks_create_total_time = aks_create_end_time - aks_create_start_time
             log("az aks create time taken: %s" % str(aks_create_total_time))
+            csvlog("CREATE",str(aks_create_total_time))
 
             log("Getting cluster credentials")
             get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
@@ -130,6 +142,7 @@ if __name__ == '__main__':
             deployment_service_create_end_time = datetime.datetime.now()
             deployment_service_create_total_time = deployment_service_create_end_time - deployment_service_create_start_time
             log("ip available: %s" % str(deployment_service_create_total_time))
+            csvlog("SERVICE_PUBLIC_IP",str(deployment_service_create_total_time))
 
             log("Getting web contents from %s" % external_ip)
 
@@ -151,6 +164,7 @@ if __name__ == '__main__':
                 create_end_time = datetime.datetime.now()
                 create_total_time = create_end_time - create_start_time
                 log("Total create time taken: %s" % str(create_total_time))
+                csvlog("WEBLOAD",str(create_total_time))
             else:
                 log("Test failed.")
 
