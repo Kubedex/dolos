@@ -167,7 +167,7 @@ if __name__ == '__main__':
                 log("Test passed. Cluster complete.")
                 create_end_time = datetime.datetime.now()
                 create_total_time = create_end_time - create_start_time
-                get_content_end_time = create_end_time
+                get_content_end_time = create_end_time - get_content_start_time
                 log("Total create time taken: %s" % str(create_total_time))
                 csvlog("WEBLOAD",str(get_content_end_time))
             else:
