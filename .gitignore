@@ -1,3 +1,5 @@
 log/*
 config.yml
 service-account.json
+.vscode/settings.json
+.DS_Store

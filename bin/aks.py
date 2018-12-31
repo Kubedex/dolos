@@ -10,9 +10,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import logging
+import csv
+import uuid
 
 DIR_NAME = os.path.dirname(os.path.realpath(__file__))
 DIR_PARENT = os.path.abspath(os.path.join(DIR_NAME, os.pardir))
+RUNID = ""
 
 with open(os.path.join(DIR_PARENT, 'config.yml'), 'r') as config_file:
     config = yaml.load(config_file.read())
@@ -57,6 +60,11 @@ def az(command):
 def log(message):
     logger.info(message)
 
+def csvlog(category,timetaken):
+    with open(os.path.join(DIR_PARENT, 'log', 'aks.csv'), 'a') as csvFile:
+      writer = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+      writer.writerow([RUNID, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), category, timetaken])
+
 def status(code):
     if code != 0:
         log("Error")
@@ -64,13 +72,18 @@ def status(code):
     return True
 
 def cleanup():
+    global RUNID
+    RUNID = uuid.uuid4().hex
+    log("Current run id: %s" % RUNID)
+
     log("Attempting to delete cluster")
     destroy_start_time = datetime.datetime.now()
-    az(['group', 'delete', '--name', 'dolos', '--yes'])
+    az(['aks', 'delete', '--name', 'dolos', '--resource-group', 'dolos', '--yes'])
     destroy_end_time = datetime.datetime.now()
     log("Cluster delete finished")
     destroy_total_time = destroy_end_time - destroy_start_time
     log("Total destroy time taken: %s" % str(destroy_total_time))
+    csvlog("DELETE",str(destroy_total_time))
     try:
         subprocess.check_output(['kubectl', 'config', 'unset', 'current-context'])
         subprocess.check_output(['kubectl', 'config', 'unset', 'users.clusterUser_dolos_dolos'])
@@ -89,17 +102,18 @@ if __name__ == '__main__':
             cleanup()
 
             create_start_time = datetime.datetime.now()
+            aks_create_start_time = create_start_time
             log("Starting test")
 
-            log("Creating Resource Group")
-            group_create = az(['group', 'create', '--name', 'dolos', '--location', 'eastus'])
-            if not status(group_create):
-                break
-
             log("Creating the AKS cluster")
-            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--generate-ssh-keys'])
+            aks_create = az(['aks', 'create', '--service-principal', config['aks']['user'], '--client-secret', config['aks']['password'], '--location', config['aks']['location'], '--resource-group', 'dolos', '--name', 'dolos', '--node-count', '1', '--kubernetes-version', '1.11.5', '--generate-ssh-keys'])
             if not status(aks_create):
                 break
+
+            aks_create_end_time = datetime.datetime.now()
+            aks_create_total_time = aks_create_end_time - aks_create_start_time
+            log("az aks create time taken: %s" % str(aks_create_total_time))
+            csvlog("CREATE",str(aks_create_total_time))
 
             log("Getting cluster credentials")
             get_creds = az(['aks', 'get-credentials', '--resource-group', 'dolos', '--name', 'dolos'])
@@ -110,6 +124,7 @@ if __name__ == '__main__':
             nodes = subprocess.check_output(['kubectl', 'get', 'nodes'])
             log(nodes)
 
+            deployment_service_create_start_time = datetime.datetime.now()
             log("Applying Deployment")
             deploy_file = os.path.join(DIR_NAME, 'fixtures', 'azure-vote.yaml')
             deployment = subprocess.check_output(['kubectl', 'apply', '-f', deploy_file])
@@ -125,6 +140,13 @@ if __name__ == '__main__':
                             break
                 except:
                     pass
+
+            deployment_service_create_end_time = datetime.datetime.now()
+            deployment_service_create_total_time = deployment_service_create_end_time - deployment_service_create_start_time
+            log("ip available: %s" % str(deployment_service_create_total_time))
+            csvlog("SERVICE_PUBLIC_IP",str(deployment_service_create_total_time))
+
+            get_content_start_time = datetime.datetime.now()
 
             log("Getting web contents from %s" % external_ip)
 
@@ -145,7 +167,9 @@ if __name__ == '__main__':
                 log("Test passed. Cluster complete.")
                 create_end_time = datetime.datetime.now()
                 create_total_time = create_end_time - create_start_time
+                get_content_end_time = create_end_time - get_content_start_time
                 log("Total create time taken: %s" % str(create_total_time))
+                csvlog("WEBLOAD",str(get_content_end_time))
             else:
                 log("Test failed.")
 
